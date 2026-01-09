@@ -4,13 +4,44 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="866d3817-1366-49f8-ace1-ac9d41ac22e2" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/Obshyaga.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/index.html" afterDir="false" />
+    <list default="true" id="866d3817-1366-49f8-ace1-ac9d41ac22e2" name="Changes" comment="Start alt">
+      <change afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bot.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/delete_room.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/excel_handler.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/init_db.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/dorm1.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/dorm2.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/dorms/dorm_1_1.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/dorms/dorm_1_2.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/dorms/dorm_1_3.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/dorms/dorm_1_4.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/dorms/dorm_1_5.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/dorms/dorm_1_main.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/dorms/dorm_2_1.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/dorms/dorm_2_2.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/dorms/dorm_2_main.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/rules.pdf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/table.xlsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/admin_panel.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/booking.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/commandant_panel.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/dorms.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/edit_booking.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/edit_user.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/enterprise_panel.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/login.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/move_booking.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/occupancy_map.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/privacy.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/rules.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/timeline.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/rzd_logo.png" beforeDir="false" afterPath="$PROJECT_DIR$/static/rzd_logo.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/index.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -20,17 +51,17 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Python Script" />
         <option value="HTML File" />
+        <option value="Python Script" />
       </list>
     </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 0
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 0
+}</component>
   <component name="ProjectId" id="34kMCD2OULe24Tupnj6WGxj8SFR" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
@@ -41,15 +72,29 @@
   "keyToString": {
     "DefaultHtmlFileTemplate": "HTML File",
     "Python.app.executor": "Run",
+    "Python.bot.executor": "Run",
+    "Python.color.executor": "Run",
+    "Python.delete_room.executor": "Run",
+    "Python.extensions.executor": "Run",
+    "Python.init_db.executor": "Run",
+    "Python.short.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "master"
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "C:/Users/Кирилл/PycharmProject/Obshyaga"
   }
 }]]></component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Кирилл\PycharmProject\Obshyaga" />
+      <recent name="C:\Users\Кирилл\PycharmProject\Obshyaga\static\dorms" />
+      <recent name="C:\Users\Кирилл\PycharmProject\Obshyaga\static" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\Кирилл\PycharmProject\Obshyaga\templates" />
+      <recent name="C:\Users\Кирилл\PycharmProject\Obshyaga\static\dorms" />
       <recent name="C:\Users\Кирилл\PycharmProject\Obshyaga\static" />
       <recent name="C:\Users\Кирилл\PycharmProject\Obshyaga" />
+      <recent name="C:\Users\Кирилл\PycharmProject\Obshyaga\templates" />
     </key>
   </component>
   <component name="RunManager">
@@ -97,6 +142,19 @@
       <option name="presentableId" value="Default" />
       <updated>1761752987621</updated>
     </task>
+    <task id="LOCAL-00001" summary="Start alt">
+      <option name="closed" value="true" />
+      <created>1762073540289</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1762073540289</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Start alt" />
+    <option name="LAST_COMMIT_MESSAGE" value="Start alt" />
   </component>
 </project>

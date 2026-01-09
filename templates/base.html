@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Общежития УЦПК Улан-Удэ</title>
+
+    <!-- Ваши оригинальные скрипты -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- !!! НОВОЕ: Библиотека для Шахматки (Vis.js) !!! -->
+    <script type="text/javascript" src="https://unpkg.com/vis-timeline@latest/standalone/umd/vis-timeline-graph2d.min.js"></script>
+    <link href="https://unpkg.com/vis-timeline@latest/styles/vis-timeline-graph2d.min.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='rzd_logo.png') }}">
+    <script>
+      // Конфигурация Tailwind (Ваша оригинальная)
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'rzd-red': '#d80000',
+              'rzd-gray': '#f3f4f6',
+              'rzd-gray-dark': '#374151',
+            }
+          }
+        }
+      }
+    </script>
+
+    <!-- !!! НОВОЕ: Исправление конфликта Tailwind и Шахматки !!! -->
+    <style>
+        /* Возвращаем границы для элементов календаря, иначе они пропадают из-за Tailwind */
+        .vis-item { border-width: 1px; }
+        .vis-item.vis-selected { border-width: 2px; }
+        .vis-timeline { border: 1px solid #e5e7eb; }
+        .vis-label { border-color: #e5e7eb; }
+        .vis-item-content { box-sizing: content-box; }
+    </style>
+
+
+</head>
+<body class="bg-rzd-gray text-rzd-gray-dark min-h-screen flex flex-col">
+
+    <header class="bg-white border-b border-gray-200 w-full sticky top-0 z-50">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <button type="button" id="mobile-menu-btn" class="md:hidden text-gray-500 hover:text-rzd-red focus:outline-none p-2">
+                        <ion-icon name="menu" class="text-3xl"></ion-icon>
+                    </button>
+
+                    <a href="{{ url_for('index') }}" class="flex items-center space-x-2">
+                         <img src="{{ url_for('static', filename='rzd_logo.png') }}" alt="Лого" class="h-10 w-auto object-contain">
+
+                    </a>
+                </div>
+
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="{{ url_for('index') }}" class="font-medium text-gray-600 hover:text-rzd-red">Главная</a>
+                    <a href="{{ url_for('dorms_page') }}" class="font-medium text-gray-600 hover:text-rzd-red">Общежития</a>
+                    <a href="{{ url_for('rules_page') }}" class="font-medium text-gray-600 hover:text-rzd-red">Правила</a>
+
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.role in ['Admin', 'Commandant'] %}
+                             <a href="{{ url_for('timeline') }}" class="font-medium text-blue-600 hover:text-blue-800 font-bold">Шахматка</a>
+                             <a href="{{ url_for('occupancy_map') }}" class="font-medium text-gray-600 hover:text-rzd-red">Карта занятости</a>
+                        {% endif %}
+
+                        {% if current_user.role == 'Admin' %}
+                            <a href="{{ url_for('admin_panel') }}" class="font-medium text-blue-600 hover:text-blue-800">Админка</a>
+                        {% elif current_user.role == 'Commandant' %}
+                            <a href="{{ url_for('commandant_panel') }}" class="font-medium text-green-600 hover:text-green-800">Панель</a>
+                        {% elif current_user.role == 'Enterprise' %}
+                             <a href="{{ url_for('enterprise_panel') }}" class="font-medium text-purple-600 hover:text-purple-800">Бронирования</a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+                <div class="hidden md:flex items-center space-x-3">
+                    {% if current_user.is_authenticated %}
+                        <div class="flex items-center space-x-2 text-right">
+                             <div class="text-xs text-gray-500">
+                                <div class="font-bold text-gray-700">{{ current_user.full_name }}</div>
+                                <div>{{ current_user.role }}</div>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-rzd-red flex items-center justify-center text-white font-bold shadow-md">
+                                <ion-icon name="person" class="text-xl"></ion-icon>
+                            </div>
+                        </div>
+                        <a href="{{ url_for('logout') }}" class="text-sm text-gray-500 hover:text-red-600 underline ml-2">Выйти</a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="bg-rzd-red text-white font-semibold py-2 px-5 rounded-lg shadow hover:bg-red-800 transition-colors">
+                            Войти
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div id="mobile-menu" class="hidden absolute top-full left-0 w-full bg-white shadow-xl border-t border-gray-100 z-50 flex flex-col animate-fade-in-down">
+
+                {% if current_user.is_authenticated %}
+                <div class="bg-gray-50 p-4 border-b flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-rzd-red flex items-center justify-center text-white font-bold">
+                         <ion-icon name="person"></ion-icon>
+                    </div>
+                    <div>
+                        <div class="font-bold text-gray-800">{{ current_user.full_name }}</div>
+                        <div class="text-xs text-gray-500">{{ current_user.role }}</div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="py-2">
+                    <a href="{{ url_for('index') }}" class="block px-6 py-3 text-gray-700 hover:bg-gray-100 hover:text-rzd-red font-medium border-b border-gray-100">Главная</a>
+                    <a href="{{ url_for('dorms_page') }}" class="block px-6 py-3 text-gray-700 hover:bg-gray-100 hover:text-rzd-red font-medium border-b border-gray-100">Общежития</a>
+                    <a href="{{ url_for('rules_page') }}" class="block px-6 py-3 text-gray-700 hover:bg-gray-100 hover:text-rzd-red font-medium border-b border-gray-100">Правила</a>
+
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.role in ['Admin', 'Commandant'] %}
+                             <a href="{{ url_for('timeline') }}" class="block px-6 py-3 text-blue-700 bg-blue-50 hover:bg-blue-100 font-bold border-b border-gray-100">Шахматка</a>
+                             <a href="{{ url_for('occupancy_map') }}" class="block px-6 py-3 text-gray-700 hover:bg-gray-100 font-medium border-b border-gray-100">Карта занятости</a>
+                        {% endif %}
+
+                        {% if current_user.role == 'Admin' %}
+                            <a href="{{ url_for('admin_panel') }}" class="block px-6 py-3 text-gray-700 hover:bg-gray-100 font-medium border-b border-gray-100">Панель Админа</a>
+                        {% elif current_user.role == 'Commandant' %}
+                            <a href="{{ url_for('commandant_panel') }}" class="block px-6 py-3 text-gray-700 hover:bg-gray-100 font-medium border-b border-gray-100">Панель Коменданта</a>
+                        {% elif current_user.role == 'Enterprise' %}
+                             <a href="{{ url_for('enterprise_panel') }}" class="block px-6 py-3 text-gray-700 hover:bg-gray-100 font-medium border-b border-gray-100">Мои Бронирования</a>
+                        {% endif %}
+
+                        <a href="{{ url_for('logout') }}" class="block px-6 py-3 text-red-600 hover:bg-red-50 font-medium">Выйти</a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="block m-4 text-center bg-rzd-red text-white py-3 rounded-lg font-bold shadow">Войти в систему</a>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <script>
+        // Логика открытия меню
+        const btn = document.getElementById('mobile-menu-btn');
+        const menu = document.getElementById('mobile-menu');
+
+        btn.addEventListener('click', () => {
+            menu.classList.toggle('hidden');
+            // Меняем иконку при открытии
+            const icon = btn.querySelector('ion-icon');
+            if (menu.classList.contains('hidden')) {
+                icon.setAttribute('name', 'menu');
+            } else {
+                icon.setAttribute('name', 'close');
+            }
+        });
+
+        // Закрываем меню при клике вне его
+        document.addEventListener('click', (e) => {
+            if (!menu.contains(e.target) && !btn.contains(e.target)) {
+                menu.classList.add('hidden');
+                btn.querySelector('ion-icon').setAttribute('name', 'menu');
+            }
+        });
+    </script>
+
+    <main class="max-w-7xl mx-auto p-4 md:p-8 mt-6 w-full flex-grow">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="mb-4 space-y-2">
+                {% for category, message in messages %}
+                    <div class="p-4 rounded-md {% if category == 'danger' %} bg-red-100 text-red-700 {% elif category == 'success' %} bg-green-100 text-green-700 {% else %} bg-blue-100 text-blue-700 {% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-white border-t border-gray-200 mt-12 w-full">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center text-gray-500">
+            <div class="flex justify-center space-x-6 mb-4">
+                <a href="{{ url_for('rules_page') }}" class="hover:text-rzd-red">Правила проживания</a>
+                <span class="text-gray-300">|</span>
+                <a href="{{ url_for('privacy_page') }}" class="hover:text-rzd-red">Политика обработки перс. данных</a>
+            </div>
+            <p>&copy; {% autoescape false %}{{ 2026 }}{% endautoescape %} Улан-Удэнское подразделение ВС УЦПК.</p>
+        </div>
+    </footer>
+
+    <div id="tooltip" class="hidden absolute z-50 p-3 bg-black text-white rounded-lg shadow-lg text-sm max-w-xs"></div>
+
+    <script>
+        const isUserLoggedIn = {{ current_user.is_authenticated|tojson }};
+        const userRole = "{{ current_user.role if current_user.is_authenticated else 'Guest' }}";
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

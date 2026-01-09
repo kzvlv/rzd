@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+
+    <div class="bg-white p-6 rounded-xl shadow-lg mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-rzd-gray-dark">Правила проживания</h1>
+            <p class="text-gray-500 mt-1">Ознакомьтесь с основными положениями перед заселением.</p>
+        </div>
+
+        <a href="{{ url_for('static', filename='rules.pdf') }}" download="Полные_правила_РЖД.pdf"
+           class="flex items-center gap-2 bg-rzd-red text-white font-bold py-3 px-6 rounded-lg hover:bg-red-800 transition-all shadow-md transform hover:-translate-y-0.5">
+            <ion-icon name="document-text-outline" class="text-xl"></ion-icon>
+            Скачать полный PDF
+        </a>
+    </div>
+
+    <div class="bg-white p-8 rounded-xl shadow-lg text-gray-700 leading-relaxed space-y-6">
+
+        <div class="prose max-w-none text-gray-700">
+            <h3 class="text-2xl font-bold text-rzd-gray-dark border-b-2 border-gray-200 pb-2 mb-4">
+                1. Общие положения
+            </h3>
+            <p class="mb-4">
+                1.1. Настоящие Правила регламентируют вопросы, связанные с проживанием обучающихся в общежитии учебного центра профессиональных квалификаций — структурного подразделения филиала ОАО «РЖД», их права и обязанности.
+            </p>
+            <p class="mb-4">
+                1.2. Правила являются локальным нормативным актом, соблюдение которого <strong>обязательно</strong> для всех проживающих в общежитии.
+            </p>
+
+            <p class="mb-4">
+                1.3. В общежитии установлено время тишины и покоя ежедневно в ночное время в период с 23:00 до 6:00.
+            </p>
+
+            <p class="mb-4">
+                1.4. В общежитии осуществляется ежедневный обход всех помещений и принятие своевременных мер по устранению выявленных нарушений.
+            </p>
+
+            <h3 class="text-2xl font-bold text-rzd-gray-dark border-b-2 border-gray-200 pb-2 mt-8 mb-4">
+                2. Пропускной режим
+            </h3>
+            <ul class="list-disc pl-5 space-y-2 mb-4">
+                <li>
+                    <strong>Время входа:</strong> Проход проживающих в общежитие осуществляется с <strong>6:00 до 23:00</strong>.
+                </li>
+                <li>
+                    После 23:00 проход допускается только в исключительных случаях по разрешению администрации общежития.
+                </li>
+                <li>
+                    <strong>Посетители:</strong> Посторонние лица к проживающим не допускаются.
+                </li>
+                <li>
+                    <strong>Документы:</strong> Проход осуществляется по пропуску (билету обучающегося формы КУ-146 или электронному пропуску) вместе с документом, удостоверяющим личность, или служебным удостоверением работника ОАО «РЖД».
+                </li>
+                <li class="text-red-600 font-semibold">
+                    Проход в общежитие в состоянии алкогольного, наркотического или токсического опьянения строго запрещен.
+                </li>
+                <li>
+                    Внос/вынос имущества, мебели и инвентаря производится только по материальному пропуску или письменному разрешению заведующего.
+                </li>
+            </ul>
+
+            <h3 class="text-2xl font-bold text-rzd-gray-dark border-b-2 border-gray-200 pb-2 mt-8 mb-4">
+                3. Заселение и переселение
+            </h3>
+            <p class="mb-4">
+                3.1. При заселении обучающийся принимает имущество комнаты по описи под роспись. Выдается ключ от комнаты и комплект постельного белья.
+            </p>
+            <p class="mb-4">
+                3.2. По решению администрации проживающий может быть переселен в другую комнату. В этом случае имущество сдается и принимается по новой описи.
+            </p>
+
+            <h3 class="text-2xl font-bold text-rzd-gray-dark border-b-2 border-gray-200 pb-2 mt-8 mb-4">
+                4. Выселение
+            </h3>
+            <p class="mb-4">
+                Выселение производится в день отчисления. При выселении проживающий обязан сдать имущество, ключ, белье и освободить комнату.
+            </p>
+            <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
+                <p class="font-bold text-red-800 mb-2">Безусловными основаниями для выселения являются:</p>
+                <ul class="list-disc pl-5 space-y-1 text-red-900">
+                    <li>Использование помещения не по назначению;</li>
+                    <li>Нахождение в состоянии опьянения (алкогольного, наркотического, токсического);</li>
+                    <li>Действия, влекущие опасные последствия для окружающих или имущества;</li>
+                    <li>Хранение оружия, взрывчатых веществ, наркотиков, спиртных напитков;</li>
+                    <li>Применение физической силы к окружающим;</li>
+                    <li>Передача пропуска или ключа другим лицам;</li>
+                    <li>Невозмещение причиненного ущерба.</li>
+                </ul>
+            </div>
+
+            <h3 class="text-2xl font-bold text-rzd-gray-dark border-b-2 border-gray-200 pb-2 mt-8 mb-4">
+                5. Права и обязанности
+            </h3>
+
+            <h4 class="text-xl font-semibold text-gray-800 mb-2">5.1. Проживающие имеют право:</h4>
+            <ul class="list-disc pl-5 space-y-1 mb-6">
+                <li>Проживать в закрепленной комнате;</li>
+                <li>Пользоваться помещениями бытового назначения, комнатой самоподготовки, бытовой техникой и инвентарем;</li>
+                <li>Получать постельное белье;</li>
+                <li>Обращаться к заведующему с просьбой о ремонте или замене оборудования, вышедшего из строя не по вине обучающегося;</li>
+                <li>Сдавать вещи на хранение (за несданные вещи администрация ответственности не несет).</li>
+            </ul>
+
+            <h4 class="text-xl font-semibold text-gray-800 mb-2">5.2. Проживающие обязаны:</h4>
+            <ul class="list-disc pl-5 space-y-1 mb-6">
+                <li>Соблюдать правила пожарной безопасности и инструкции по пользованию электроприборами;</li>
+                <li>Бережно относиться к имуществу, поддерживать чистоту, экономно расходовать воду и электроэнергию;</li>
+                <li>Производить уборку в жилых комнатах ежедневно, а на кухне — по графику дежурств;</li>
+                <li>Обеспечивать доступ в комнату администрации для проверки соблюдения правил и сохранности имущества;</li>
+                <li>Соблюдать режим тишины;</li>
+                <li>Заблаговременно извещать об отсутствии в ночное время или выходные дни;</li>
+                <li>При выселении сдать комнату в чистоте и возместить ущерб, если таковой имеется.</li>
+            </ul>
+
+            <h4 class="text-xl font-semibold text-red-700 mb-2">5.3. ЗАПРЕЩАЕТСЯ:</h4>
+            <ul class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-800">
+                <li class="flex items-start gap-2"><ion-icon name="close-circle" class="text-red-500 mt-1"></ion-icon> Находиться в общежитии во время занятий без причины.</li>
+                <li class="flex items-start gap-2"><ion-icon name="close-circle" class="text-red-500 mt-1"></ion-icon> Переселяться или переносить мебель без разрешения.</li>
+                <li class="flex items-start gap-2"><ion-icon name="close-circle" class="text-red-500 mt-1"></ion-icon> Производить ремонт, переделку проводки, замену замков.</li>
+                <li class="flex items-start gap-2"><ion-icon name="close-circle" class="text-red-500 mt-1"></ion-icon> Использовать мощные электроприборы (> 2.5 кВт).</li>
+                <li class="flex items-start gap-2"><ion-icon name="close-circle" class="text-red-500 mt-1"></ion-icon> Шуметь, использовать нецензурную лексику.</li>
+                <li class="flex items-start gap-2"><ion-icon name="close-circle" class="text-red-500 mt-1"></ion-icon> Курить (в т.ч. электронные сигареты, кальяны).</li>
+                <li class="flex items-start gap-2"><ion-icon name="close-circle" class="text-red-500 mt-1"></ion-icon> Принимать посетителей и посторонних лиц.</li>
+                <li class="flex items-start gap-2"><ion-icon name="close-circle" class="text-red-500 mt-1"></ion-icon> Употреблять/хранить алкоголь и наркотики.</li>
+                <li class="flex items-start gap-2"><ion-icon name="close-circle" class="text-red-500 mt-1"></ion-icon> Содержать животных.</li>
+                <li class="flex items-start gap-2"><ion-icon name="close-circle" class="text-red-500 mt-1"></ion-icon> Выбрасывать мусор из окон.</li>
+            </ul>
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-gray-200 text-center">
+            <p class="mb-4 text-gray-500">Для ознакомления с полным текстом документа, включая приложения и печати:</p>
+            <a href="{{ url_for('static', filename='rules.pdf') }}" download="Полные_правила_РЖД.pdf"
+               class="inline-flex items-center gap-2 text-rzd-red font-bold hover:underline">
+                <ion-icon name="download-outline"></ion-icon>
+                Скачать полный документ (.pdf)
+            </a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

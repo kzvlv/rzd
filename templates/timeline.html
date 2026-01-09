@@ -1,0 +1,263 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+    <h1 class="text-3xl font-bold">Шахматка бронирований</h1>
+
+    <div class="flex gap-4 items-center">
+        {% if current_user.role == 'Admin' %}
+            <select id="dorm-select" class="border p-2 rounded shadow bg-white" onchange="loadTimeline()">
+                {% for d in dorms %}
+                <option value="{{ d.id }}">{{ d.name }}</option>
+                {% endfor %}
+            </select>
+        {% else %}
+            <input type="hidden" id="dorm-select" value="{{ current_user.dorm_id }}">
+            {% if current_user.dorm %}
+                <div class="text-xl font-bold text-gray-600 bg-white px-4 py-2 rounded shadow">
+                    {{ current_user.dorm.name }}
+                </div>
+            {% else %}
+                <div class="text-red-500 font-bold">Ошибка: Общежитие не привязано</div>
+            {% endif %}
+        {% endif %}
+
+
+
+        <button onclick="loadTimeline()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 shadow flex items-center gap-2">
+            <ion-icon name="refresh"></ion-icon> Обновить
+        </button>
+    </div>
+</div>
+
+<div class="flex flex-wrap gap-4 mb-4 text-sm bg-white p-3 rounded shadow items-center">
+    <div class="flex items-center gap-2"><div class="w-4 h-4 rounded bg-green-500 border border-green-700"></div> Проживает</div>
+    <div class="flex items-center gap-2"><div class="w-4 h-4 rounded bg-yellow-400 border border-yellow-600"></div> Забронировано</div>
+    <div class="flex items-center gap-2"><div class="w-4 h-4 rounded bg-gray-300 opacity-50 border border-gray-400" style="background: repeating-linear-gradient(45deg, #e5e7eb, #e5e7eb 5px, #d1d5db 5px, #d1d5db 10px);"></div> Ремонт</div>
+    <div class="ml-auto text-gray-500 text-xs flex items-center gap-1">
+        <ion-icon name="information-circle"></ion-icon>
+        <span>Данные обновляются автоматически каждые 10 сек.</span>
+    </div>
+</div>
+
+<div id="visualization" class="bg-white p-1 rounded shadow-lg border relative min-h-[500px]">
+    <div id="loader" class="absolute inset-0 flex items-center justify-center bg-white z-10">
+        <div class="text-gray-500">Загрузка компонента...</div>
+    </div>
+</div>
+
+<div id="booking-details" class="mt-4 hidden bg-blue-50 p-6 rounded-xl border border-blue-200 shadow-md animate-fade-in-up">
+    <div class="flex justify-between items-start">
+        <div>
+            <h3 class="font-bold text-xl text-blue-900 mb-2">Детали бронирования</h3>
+            <p id="detail-content" class="text-gray-700 leading-relaxed"></p>
+        </div>
+        <a id="detail-link" href="#" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium transition shadow">
+            Управление / Переселение
+        </a>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<style>
+    /* Стили для Vis.js */
+    .vis-item {
+        border-color: rgba(0,0,0,0.1);
+        font-size: 12px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    /* Штриховка для практики (Фон) */
+    .status-practice-bg {
+        background: repeating-linear-gradient(
+            -45deg,
+            #f3f4f6,
+            #f3f4f6 5px,
+            #e5e7eb 5px,
+            #e5e7eb 10px
+        );
+        opacity: 0.8;
+        border-left: 1px dashed #9ca3af;
+        border-right: 1px dashed #9ca3af;
+    }
+    /* Цвет полосок */
+    .vis-item.status-living {
+        background-color: #22c55e; /* Green */
+        border-color: #15803d;
+        color: white;
+    }
+    .vis-item.status-booked {
+        background-color: #facc15; /* Yellow */
+        border-color: #ca8a04;
+        color: #3f3f46;
+    }
+    .vis-item.status-repair {
+        background: repeating-linear-gradient(45deg, #e5e7eb, #e5e7eb 10px, #d1d5db 10px, #d1d5db 20px);
+        border-color: #9ca3af;
+        color: #6b7280;
+        opacity: 0.7;
+    }
+
+    /* Контейнер */
+    #visualization {
+        width: 100%;
+        border: 1px solid #e5e7eb;
+    }
+
+    /* Сетки */
+    .vis-time-axis .vis-grid.vis-minor { border-color: #f3f4f6; }
+    .vis-label { font-weight: 600; color: #374151; }
+
+    /* Штриховка для практики (Фон) */
+    .status-practice-bg {
+        background: repeating-linear-gradient(
+            -45deg,
+            #f3f4f6,
+            #f3f4f6 5px,
+            #e5e7eb 5px,
+            #e5e7eb 10px
+        );
+        opacity: 0.8;
+        border-left: 1px dashed #9ca3af;
+        border-right: 1px dashed #9ca3af;
+    }
+</style>
+
+<script>
+    // Глобальные переменные
+    var timeline = null;
+    var items = new vis.DataSet();
+    var groups = new vis.DataSet();
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Проверка загрузки библиотеки
+        if (typeof vis === 'undefined') {
+            document.getElementById('visualization').innerHTML = `
+                <div class="p-10 text-center text-red-600 font-bold">
+                    Ошибка: Библиотека Vis.js не загружена.<br>
+                    Проверьте подключение к интернету или файл base.html.
+                </div>`;
+            return;
+        }
+
+        // 1. Инициализация
+        initTimeline();
+        // 2. Первичная загрузка
+        loadData();
+        // 3. Авто-обновление (10 сек)
+        setInterval(loadData, 10000);
+    });
+
+    function initTimeline() {
+        const container = document.getElementById('visualization');
+
+        // Удаляем лоадер
+        const loader = document.getElementById('loader');
+        if(loader) loader.remove();
+
+        var today = new Date();
+        var startWindow = new Date(today); startWindow.setDate(today.getDate() - 7); // -1 неделя
+        var endWindow = new Date(today); endWindow.setDate(today.getDate() + 21);  // +3 недели
+
+        var options = {
+            groupOrder: 'content',
+            editable: false,
+            stack: false,
+            locale: 'ru',
+            orientation: 'top',
+            start: startWindow,
+            end: endWindow,
+            height: '500px',        // Высота
+            verticalScroll: true,
+            horizontalScroll: true,
+            zoomKey: 'ctrlKey',     // Zoom только с Ctrl
+            tooltip: { followMouse: true },
+            margin: { item: 2 }     // Отступы между полосками
+        };
+
+        timeline = new vis.Timeline(container, items, groups, options);
+
+        timeline.on('select', function (properties) {
+            handleSelect(properties);
+        });
+    }
+
+    function loadData() {
+        const dormSelect = document.getElementById('dorm-select');
+        if (!dormSelect || !dormSelect.value) return;
+
+        const dormId = dormSelect.value;
+        const visualization = document.getElementById('visualization');
+
+        fetch(`/api/timeline-data?dorm_id=${dormId}`)
+            .then(response => {
+                // Если сервер вернул 500 (ошибку), пытаемся прочитать текст ошибки
+                if (!response.ok) {
+                    return response.json().then(errData => { throw new Error(errData.error || 'Ошибка сервера'); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) throw new Error(data.error);
+
+                // Успех
+                groups.update(data.groups);
+                items.clear();
+                items.add(data.items);
+            })
+            .catch(err => {
+                console.error('Ошибка загрузки данных:', err);
+                // Показываем ошибку пользователю, чтобы не было "вечной загрузки"
+                visualization.innerHTML = `
+                    <div class="p-10 text-center text-red-600">
+                        <strong>Произошла ошибка при загрузке данных:</strong><br>
+                        ${err.message}
+                    </div>`;
+            });
+    }
+
+    function handleSelect(properties) {
+        const detailsDiv = document.getElementById('booking-details');
+        const detailContent = document.getElementById('detail-content');
+        const detailLink = document.getElementById('detail-link');
+
+        var selectedId = properties.items[0];
+        if (selectedId) {
+            var item = items.get(selectedId);
+            if (!item || item.type === 'background') return;
+
+            let opts = {day:'numeric', month:'long', year:'numeric'};
+            let startF = new Date(item.start).toLocaleString('ru-RU', opts);
+            let endF = new Date(item.end).toLocaleString('ru-RU', opts);
+
+            detailsDiv.classList.remove('hidden');
+            detailContent.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><strong>ФИО:</strong> ${item.content}</div>
+                    <div><strong>Организация:</strong> ${item.enterprise}</div>
+                    <div><strong>Заезд:</strong> ${startF}</div>
+                    <div><strong>Выезд:</strong> ${endF}</div>
+                    <div><strong>Статус:</strong>
+                        <span class="${item.className === 'status-living' ? 'text-green-600' : 'text-yellow-600'} font-bold">
+                            ${item.className === 'status-living' ? 'Проживает' : 'Забронировано'}
+                        </span>
+                    </div>
+                </div>
+            `;
+            detailLink.href = `/move-booking/${item.booking_id}`;
+        } else {
+            detailsDiv.classList.add('hidden');
+        }
+    }
+
+    // Функция для вызова из HTML onchange
+    window.loadTimeline = function() {
+        // Очищаем и грузим заново
+        groups.clear();
+        items.clear();
+        loadData();
+    }
+</script>
+{% endblock %}

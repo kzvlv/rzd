@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1 class="text-3xl font-bold mb-2">Перемещение бронирования</h1>
+<h2 class="text-xl text-gray-700 mb-8">
+    <strong>{{ booking.full_name }}</strong> (c {{ booking.start_date.strftime('%d.%m.%Y') }} по {{ booking.end_date.strftime('%d.%m.%Y') }})
+</h2>
+
+<div class="bg-white p-8 rounded-xl shadow-lg max-w-2xl mx-auto">
+    <form method="POST" action="{{ url_for('edit_booking', booking_id=booking.id) }}" class="space-y-4">
+        
+        <p>
+            <strong>Текущее положение:</strong> 
+            {{ booking.room.dorm.name }} / 
+            Комната {{ booking.room.room_number }} / 
+            Место {{ booking.bed_id }}
+        </p>
+        
+        <hr>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">1. Выберите новую комнату</label>
+            <select name="room_id" required class="w-full p-2 border rounded">
+                <option value="">-- Выберите комнату --</option>
+                {% for dorm in rooms|groupby('dorm_id') %}
+                    <optgroup label="{{ rooms|selectattr('dorm_id', 'equalto', dorm.grouper)|first|attr('dorm')|attr('name') }}">
+                        {% for room in dorm.list %}
+                        <option value="{{ room.id }}">
+                            Комната {{ room.room_number }} ({{ room.capacity }} мест)
+                        </option>
+                        {% endfor %}
+                    </optgroup>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div>
+            <label class="block text-sm font-medium text-gray-700">2. Выберите новое место</label>
+            <input type="number" name="bed_id" required min="1" max="10" placeholder="Номер места (напр. 1)" class="w-full p-2 border rounded">
+            <p class="text-xs text-gray-500">Внимание: Система не проверит пол и доступность места до нажатия "Сохранить".</p>
+        </div>
+
+        <div class="flex gap-4 pt-4">
+            <a href="{{ url_for('admin_panel') }}" class="w-1/2 text-center bg-gray-200 text-gray-700 font-bold py-3 px-6 rounded-lg hover:bg-gray-300 transition-colors">
+                Отмена
+            </a>
+            <button type="submit" class="w-1/2 bg-rzd-red text-white font-bold py-3 px-6 rounded-lg hover:bg-red-800 transition-all">
+                Переместить
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

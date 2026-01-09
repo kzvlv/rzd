@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1 class="text-3xl font-bold mb-8">Панель Предприятия</h1>
+<h2 class="text-2xl font-semibold mb-6">Ваши бронирования ({{ current_user.enterprise_name }})</h2>
+
+<div class="bg-white p-6 rounded-xl shadow-lg">
+    <a href="{{ url_for('booking') }}" class="inline-block bg-rzd-red text-white font-bold py-3 px-6 rounded-lg hover:bg-red-800 mb-6">
+        + Создать новое бронирование
+    </a>
+    
+    <h3 class="text-xl font-semibold mb-4">История ваших бронирований</h3>
+    <div class="max-h-96 overflow-y-auto overflow-x-auto">
+        <table class="w-full text-sm min-w-[600px]">
+            <thead class="bg-gray-100 sticky top-0">
+                <tr>
+                    <th class="p-2 text-left">ФИО</th>
+                    <th class="p-2 text-left">Группа</th>
+                    <th class="p-2 text-left">Общ/Ком/Место</th>
+                    <th class="p-2 text-left">Заезд</th>
+                    <th class="p-2 text-left">Выезд</th>
+                    <th class="p-2 text-left">Статус</th>
+                    <th class="p-2 text-left">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for b in bookings %}
+                <tr class="border-b">
+                    <td class="p-2">{{ b.full_name }}</td>
+                    <td class="p-2">{{ b.study_group }}</td>
+                    <td class="p-2">{{ b.room.dorm.name }} / {{ b.room.room_number }} / {{ b.bed_id }}</td>
+                    <td class="p-2">{{ b.start_date.strftime('%Y-%m-%d') }}</td>
+                    <td class="p-2">{{ b.end_date.strftime('%Y-%m-%d') }}</td>
+                    <td class="p-2">{{ b.status }}</td>
+                    <td class="p-2">
+                        {% if b.status == 'booked' %}
+                        <form action="{{ url_for('cancel_booking', booking_id=b.id) }}" method="POST" onsubmit="return confirm('Вы уверены, что хотите отменить это бронирование?');">
+                            <button type="submit" class="text-red-500 hover:underline">Отменить</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

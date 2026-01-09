@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1 class="text-3xl font-bold mb-2">Перемещение бронирования</h1>
+<h2 class="text-xl text-gray-700 mb-8">
+    <strong>{{ booking.full_name }}</strong> (c {{ booking.start_date.strftime('%d.%m.%Y') }} по {{ booking.end_date.strftime('%d.%m.%Y') }})
+</h2>
+
+<div class="bg-white p-8 rounded-xl shadow-lg max-w-5xl mx-auto">
+    
+    <form method="POST" action="{{ url_for('move_booking_action', booking_id=booking.id) }}" id="move-form">
+        
+        {% if current_user.role == 'Admin' %}
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700">1. Выберите общежитие</label>
+            <select id="dorm-select" class="w-full p-2 border rounded">
+                {% for dorm in dorms %}
+                <option value="{{ dorm.id }}" {% if dorm.id == booking.room.dorm_id %}selected{% endif %}>
+                    {{ dorm.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+
+        <h3 class="text-lg font-semibold mb-4">2. Выберите новое место на схеме</h3>
+        <p class="text-sm text-gray-600 mb-4">
+            Загружена схема доступности для дат <strong>{{ booking.start_date.strftime('%d.%m') }} - {{ booking.end_date.strftime('%d.%m') }}</strong> 
+            и пола <strong>{{ booking.gender }}</strong>.
+        </p>
+
+        <div class="flex justify-center gap-6 mb-6 flex-wrap bg-gray-50 p-4 rounded-lg">
+            <div class="flex items-center gap-2"><div class="w-5 h-5 rounded-full bg-green-500"></div><span class="text-sm">Свободно</span></div>
+            <div class="flex items-center gap-2"><div class="w-5 h-5 rounded-full bg-red-500"></div><span class="text-sm">Занято</span></div>
+            <div class="flex items-center gap-2"><div class="w-5 h-5 rounded-full bg-purple-600"></div><span class="text-sm">Это текущее место</span></div>
+            <div class="flex items-center gap-2"><div class="w-5 h-5 rounded-full bg-gray-400"></div><span class="text-sm">Недоступно (пол)</span></div>
+            <div class="flex items-center gap-2"><div class="w-5 h-5 rounded-full bg-yellow-400 border border-gray-600"></div><span class="text-sm">На ремонте</span></div>
+        </div>
+
+        <div id="room-selection-container" class="space-y-8 border p-4 rounded-lg bg-gray-50">
+            <div id="rooms-placeholder" class="text-center text-gray-500 py-10">
+                Загрузка комнат...
+            </div>
+        </div>
+
+        <input type="hidden" name="new_room_id" id="new_room_id">
+        <input type="hidden" name="new_bed_id" id="new_bed_id">
+
+        <div class="flex gap-4 pt-6">
+            <a href="{{ url_for('admin_panel') if current_user.role == 'Admin' else url_for('commandant_panel') }}" class="w-1/2 text-center bg-gray-200 text-gray-700 font-bold py-3 px-6 rounded-lg hover:bg-gray-300 transition-colors">
+                Отмена
+            </a>
+            <button type="submit" id="btn-confirm-move" disabled class="w-1/2 bg-rzd-red text-white font-bold py-3 px-6 rounded-lg transition-all disabled:bg-gray-400 disabled:cursor-not-allowed">
+                Переместить
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Данные со страницы
+    const booking = {
+        id: {{ booking.id|tojson }},
+        startDate: {{ booking.start_date.isoformat()|tojson }},
+        endDate: {{ booking.end_date.isoformat()|tojson }},
+        gender: {{ booking.gender|tojson }}
+    };
+
+    const dormSelect = document.getElementById('dorm-select');
+    // У коменданта нет dormSelect, поэтому берем ID из брони
+    const initialDormId = dormSelect ? dormSelect.value : {{ booking.room.dorm_id|tojson }};
+
+    const roomsPlaceholder = document.getElementById('rooms-placeholder');
+    const roomSelectionContainer = document.getElementById('room-selection-container');
+    const btnConfirmMove = document.getElementById('btn-confirm-move');
+    const inputNewRoomId = document.getElementById('new_room_id');
+    const inputNewBedId = document.getElementById('new_bed_id');
+
+    // Та же функция, что и на странице бронирования
+    async function renderRoomGrid(dormId) {
+        roomsPlaceholder.textContent = 'Загрузка комнат...';
+        roomsPlaceholder.style.display = 'block';
+        roomSelectionContainer.innerHTML = '';
+        btnConfirmMove.disabled = true; // Блокируем кнопку
+
+        try {
+            // Используем тот же API, что и для бронирования
+            const response = await fetch(`/api/get-rooms?dorm_id=${dormId}&start_date=${booking.startDate}&end_date=${booking.endDate}&gender=${booking.gender}`);
+            if (!response.ok) throw new Error('Ошибка сети');
+
+            const rooms = await response.json();
+            if (rooms.error) throw new Error(rooms.error);
+
+            roomsPlaceholder.style.display = 'none';
+            const roomsByCapacity = { 2: [], 3: [] };
+
+            rooms.forEach(room => {
+                let roomHTML = `<div class="room-card" data-room-id="${room.id}" data-room-number="${room.number}">
+                                    <h4 class="font-semibold text-lg text-center">Комната ${room.number}</h4>
+                                    <div class="bed-container">`;
+
+                room.beds.forEach(bed => {
+                    let bedClass = bed.status;
+                    let bedTitle = '';
+
+                    if (bed.status === 'occupied_by_you') bedClass = 'bed-occupied-you';
+                    if (bed.status === 'repair') bedClass = 'bed-repair';
+
+                    // Особый случай: подсвечиваем текущее место гостя
+                    if (room.id == {{ booking.room_id }} && bed.id == {{ booking.bed_id }}) {
+                         bedClass = 'bed-occupied-you'; // Фиолетовый
+                         bedTitle = 'Текущее место';
+                    } else if (bed.status === 'available') {
+                        bedTitle = 'Свободно';
+                    } else {
+                        bedTitle = 'Занято';
+                    }
+
+                    roomHTML += `<div class="bed ${bedClass}" data-bed-id="${bed.id}" title="${bedTitle}"></div>`;
+                });
+                roomHTML += `</div></div>`;
+                if (room.capacity === 2) roomsByCapacity[2].push(roomHTML);
+                else roomsByCapacity[3].push(roomHTML);
+            });
+
+            let finalHTML = '';
+            if (roomsByCapacity[3].length > 0) finalHTML += `<div><h3 class="text-xl font-semibold mb-4 border-b-2">3-местные</h3><div class="room-grid">${roomsByCapacity[3].join('')}</div></div>`;
+            if (roomsByCapacity[2].length > 0) finalHTML += `<div><h3 class="text-xl font-semibold mb-4 border-b-2">2-местные</h3><div class="room-grid">${roomsByCapacity[2].join('')}</div></div>`;
+            roomSelectionContainer.innerHTML = finalHTML;
+            
+            addBedClickListeners();
+
+        } catch (error) {
+            roomsPlaceholder.textContent = `Ошибка: ${error.message}`;
+        }
+    }
+
+    function addBedClickListeners() {
+        roomSelectionContainer.querySelectorAll('.bed.available').forEach(bed => {
+            bed.addEventListener('click', () => {
+                // Снимаем выделение
+                document.querySelectorAll('.bed').forEach(b => b.classList.remove('selected-bed'));
+                document.querySelectorAll('.room-card').forEach(rc => rc.classList.remove('selected-room'));
+
+                // Выделяем новое
+                bed.classList.add('selected-bed');
+                const roomCard = bed.closest('.room-card');
+                roomCard.classList.add('selected-room');
+
+                // Заполняем скрытые поля
+                inputNewRoomId.value = roomCard.dataset.roomId;
+                inputNewBedId.value = bed.dataset.bedId;
+                
+                // Разблокируем кнопку
+                btnConfirmMove.disabled = false;
+            });
+        });
+    }
+
+    // Загружаем схему при входе
+    renderRoomGrid(initialDormId);
+
+    // Если у нас есть селектор (для админа)
+    if (dormSelect) {
+        dormSelect.addEventListener('change', (e) => {
+            renderRoomGrid(e.target.value);
+        });
+    }
+
+});
+</script>
+{% endblock %}

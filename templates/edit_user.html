@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1 class="text-3xl font-bold mb-8">Редактировать пользователя: {{ user.full_name }}</h1>
+
+<div class="bg-white p-8 rounded-xl shadow-lg max-w-2xl mx-auto">
+    <form method="POST" action="{{ url_for('edit_user', user_id=user.id) }}" class="space-y-4">
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Роль</label>
+            <input type="text" value="{{ user.role }}" readonly class="w-full p-2 border rounded bg-gray-100 cursor-not-allowed">
+        </div>
+        
+        <div>
+            <label class="block text-sm font-medium text-gray-700">ФИО</label>
+            <input type="text" name="full_name" value="{{ user.full_name }}" required class="w-full p-2 border rounded">
+        </div>
+
+        {% if user.role == 'Enterprise' %}
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Название предприятия</label>
+            <input type="text" name="enterprise_name" value="{{ user.enterprise_name or '' }}" class="w-full p-2 border rounded">
+        </div>
+        {% endif %}
+
+        {% if user.role == 'Commandant' %}
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Привязать к общежитию</label>
+            <select name="dorm_id" class="w-full p-2 border rounded">
+                <option value="">Не назначено</option>
+                {% for dorm in dorms %}
+                <option value="{{ dorm.id }}" {% if user.dorm_id == dorm.id %}selected{% endif %}>{{ dorm.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+        
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Телефон</label>
+            <input type="text" name="phone" value="{{ user.phone or '' }}" class="w-full p-2 border rounded">
+        </div>
+        
+        <hr class="pt-4">
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Логин</label>
+            <input type="text" name="username" value="{{ user.username }}" required class="w-full p-2 border rounded">
+        </div>
+        
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Новый пароль</label>
+            <input type="password" name="password" class="w-full p-2 border rounded" placeholder="Оставьте пустым, чтобы не менять">
+            <p class="text-xs text-gray-500">Если вы введете здесь значение, старый пароль будет перезаписан.</p>
+        </div>
+
+        <div class="flex gap-4 pt-4">
+            <a href="{{ url_for('admin_panel') }}" class="w-1/2 text-center bg-gray-200 text-gray-700 font-bold py-3 px-6 rounded-lg hover:bg-gray-300 transition-colors">
+                Отмена
+            </a>
+            <button type="submit" class="w-1/2 bg-rzd-red text-white font-bold py-3 px-6 rounded-lg hover:bg-red-800 transition-all">
+                Сохранить изменения
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
