@@ -1,3 +1,4 @@
+import sqlite3
 from flask_login import UserMixin
 # Импортируем из нового файла extensions.py
 from extensions import db, bcrypt
